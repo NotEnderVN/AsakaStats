@@ -6,3 +6,7 @@
 - **/asakastats** -> Thông tin cơ bản (**Không có quyền**)
 - **/resetstats <tên người chơi>** -> Reset stats của một player (**asakastats.admin**)
 - **/stats** *hoặc* **/stats <tên người chơi>** -> Hiển thị stats của mình hoặc người chơi khác (**Không có quyền**)
+
+## Cách tự compile file
+- B1: Tải source code về: `https://github.com/NotEnderVN/AsakaStats.git`
+- B2: Dùng lệnh: `mvn clean package`
