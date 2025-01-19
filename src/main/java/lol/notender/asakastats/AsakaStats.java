@@ -27,8 +27,8 @@ public final class AsakaStats extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        new AsakaStatsExpansion(dataStorage).register();
         this.dataStorage = new JsonFileStorage(this);
+        new AsakaStatsExpansion(dataStorage).register();
 
         Bukkit.getPluginManager().registerEvents(new PlayerKillListener(dataStorage), this);
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(dataStorage), this);
