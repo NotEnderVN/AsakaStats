@@ -26,7 +26,7 @@ Phiên bản máy chủ Minecraft đã thử: PaperMC 1.21.1
 
 ## Cách tự compile file
 *Project dùng Java 17, API MC 1.20
-- B1: Tải source code về: `https://github.com/NotEnderVN/AsakaStats.git`
+- B1: Tải source code về: `git clone https://github.com/NotEnderVN/AsakaStats.git`
 - B2: Dùng lệnh: `mvn clean package`
 - B3: Sau khi báo thành công, vào folder `target` rồi lấy file `AsakaStats-x.x.jar`
 
