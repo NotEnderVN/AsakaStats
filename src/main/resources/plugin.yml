@@ -2,7 +2,7 @@ name: AsakaStats
 version: '${project.version}'
 main: lol.notender.asakastats.AsakaStats
 api-version: '1.20'
-depend: ["PlaceholderAPI"]
+softdepend: ["PlaceholderAPI"]
 
 commands:
   asakastats:
