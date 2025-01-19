@@ -1,7 +1,8 @@
 # AsakaStats
 Đây là plugin đầu tiên của mình tự làm (chắc vậy) nên nhìn ncc, cảm ơn vì da den
 
-Phiên bản máy chủ Minecraft đã thử: PaperMC 1.21.1
+Phiên bản máy chủ Minecraft đã thử: 1.21.1
+Phiên bản máy chủ Minecraft __CÓ THỂ SẼ DÙNG ĐƯỢC__: 1.19.x, 1.20.x
 
 ![image](https://github.com/user-attachments/assets/4b99af92-23f5-44c7-ada7-0f9cf5bdf659)
 
