@@ -14,7 +14,7 @@ Phiên bản máy chủ Minecraft đã thử: PaperMC 1.21.1
 
 ## Placeholder API
 - Yêu cầu: Cài plugin [Placeholder API](https://www.spigotmc.org/resources/placeholderapi.6245/)
-- **%asakamcstats_**_kills_/_deaths_/_kdr_/_killstreak_/_topkillstreak_**%**
+- **%asakastats_**_kills_/_deaths_/_kdr_/_killstreak_/_topkillstreak_**%**
   + Mẫu:
 
     ![image](https://github.com/user-attachments/assets/54c975ea-6f1f-4e86-bf53-b7313dd9045c)
