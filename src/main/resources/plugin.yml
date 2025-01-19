@@ -1,0 +1,17 @@
+name: AsakaStats
+version: '${project.version}'
+main: lol.notender.asakastats.AsakaStats
+api-version: '1.20'
+depend: ["PlaceholderAPI"]
+
+commands:
+  asakastats:
+    usage: /<command>
+    description: View basic informations of the plugin.
+  stats:
+    usage: /<command>
+    description: View statistics of a player.
+  resetstats:
+    usage: /<command>
+    description: Reset statistics of a player.
+    permission: asakastats.admin
