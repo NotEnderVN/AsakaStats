@@ -6,8 +6,6 @@ Phiên bản máy chủ Minecraft __CÓ THỂ SẼ DÙNG ĐƯỢC__: 1.19.x, 1.2
 
 ![image](https://github.com/user-attachments/assets/4b99af92-23f5-44c7-ada7-0f9cf5bdf659)
 
-*btw, vào server của mình chơi nhé: [asakamc.net](https://asakamc.net/) :trollface:*
-
 ## Lệnh và quyền
 - **/asakastats** -> Thông tin cơ bản (**Không có quyền**)
 - **/resetstats <tên người chơi>** -> Reset stats của một player (**asakastats.admin**)
