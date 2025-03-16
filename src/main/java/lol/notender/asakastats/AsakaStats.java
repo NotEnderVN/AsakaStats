@@ -1,10 +1,5 @@
 package lol.notender.asakastats;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonWriter;
-import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -20,21 +15,34 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public final class AsakaStats extends JavaPlugin {
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonWriter;
+
+import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.jetbrains.annotations.NotNull;
+
+public final class AsakaStats extends JavaPlugin implements CommandExecutor {
 
     private DataStorage dataStorage;
+    private Logger logger;
 
     @Override
     public void onEnable() {
-        this.dataStorage = new JsonFileStorage(this);
+        this.logger = getLogger();
+        this.dataStorage = new JsonFileStorage(this, logger);
         new AsakaStatsExpansion(dataStorage).register();
 
         Bukkit.getPluginManager().registerEvents(new PlayerKillListener(dataStorage), this);
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(dataStorage), this);
 
-        this.getCommand("stats").setExecutor(new StatsCommand(dataStorage, this));
-        this.getCommand("resetstats").setExecutor(new ResetStatsCommand(dataStorage, this));
+        this.getCommand("stats").setExecutor(new StatsCommand(dataStorage));
+        this.getCommand("resetstats").setExecutor(new ResetStatsCommand(dataStorage));
+        this.getCommand("asakastats").setExecutor(this);
 
         ConsoleCommandSender console = Bukkit.getConsoleSender();
         console.sendMessage("§f");
@@ -48,6 +56,10 @@ public final class AsakaStats extends JavaPlugin {
         ConsoleCommandSender console = Bukkit.getConsoleSender();
         console.sendMessage("§eThank you for using AsakaStats");
         this.dataStorage.close();
+    }
+
+    private void logInfo(String message) {
+        logger.info("§f" + message);
     }
 
     interface DataStorage {
@@ -67,12 +79,18 @@ public final class AsakaStats extends JavaPlugin {
         private final AsakaStats plugin;
         private final File dataFolder;
         private final Gson gson = new Gson();
+        private final Logger logger;
 
-        public JsonFileStorage(AsakaStats plugin) {
+        public JsonFileStorage(AsakaStats plugin, Logger logger) {
             this.plugin = plugin;
             this.dataFolder = new File(plugin.getDataFolder(), "data");
+            this.logger = logger;
             if (!this.dataFolder.exists()) {
-                this.dataFolder.mkdirs();
+                if (this.dataFolder.mkdirs()) {
+                    logger.info("Data folder created.");
+                } else {
+                    logger.warning("Failed to create data folder.");
+                }
             }
         }
 
@@ -94,9 +112,7 @@ public final class AsakaStats extends JavaPlugin {
 
         @Override
         public void recordKill(Player player) {
-            File playerFile = new File(dataFolder, player.getUniqueId() + ".json");
-            if (playerFile.exists()) {
-                JsonObject playerData = loadPlayerData(playerFile);
+            updatePlayerData(player, playerData -> {
                 int kills = playerData.get("kills").getAsInt() + 1;
                 int killstreak = playerData.get("killstreak").getAsInt() + 1;
                 int topKillstreak = Math.max(playerData.get("topkillstreak").getAsInt(), killstreak);
@@ -106,97 +122,86 @@ public final class AsakaStats extends JavaPlugin {
                 playerData.addProperty("killstreak", killstreak);
                 playerData.addProperty("topkillstreak", topKillstreak);
                 playerData.addProperty("kdr", kdr);
-
-                savePlayerData(playerFile, playerData);
-            }
+            });
         }
 
         @Override
         public void recordDeath(Player player) {
-            File playerFile = new File(dataFolder, player.getUniqueId() + ".json");
-            if (playerFile.exists()) {
-                JsonObject playerData = loadPlayerData(playerFile);
+            updatePlayerData(player, playerData -> {
                 int deaths = playerData.get("deaths").getAsInt() + 1;
                 int kills = playerData.get("kills").getAsInt();
                 double kdr = kills == 0 ? 0.0 : (double) kills / deaths;
                 playerData.addProperty("deaths", deaths);
                 playerData.addProperty("killstreak", 0);
                 playerData.addProperty("kdr", kdr);
-
-                savePlayerData(playerFile, playerData);
-            }
+            });
         }
 
         @Override
         public int getKills(Player player) {
-            File playerFile = new File(dataFolder, player.getUniqueId() + ".json");
-            if (playerFile.exists()) {
-                JsonObject playerData = loadPlayerData(playerFile);
-                return playerData.get("kills").getAsInt();
-            }
-            return 0;
+            return getPlayerData(player, "kills", 0);
         }
 
         @Override
         public int getDeaths(Player player) {
-            File playerFile = new File(dataFolder, player.getUniqueId() + ".json");
-            if (playerFile.exists()) {
-                JsonObject playerData = loadPlayerData(playerFile);
-                return playerData.get("deaths").getAsInt();
-            }
-            return 0;
+            return getPlayerData(player, "deaths", 0);
         }
 
         @Override
         public double getKDR(Player player) {
-            File playerFile = new File(dataFolder, player.getUniqueId() + ".json");
-            if (playerFile.exists()) {
-                JsonObject playerData = loadPlayerData(playerFile);
-                return playerData.get("kdr").getAsDouble();
-            }
-            return 0.0;
+            return getPlayerData(player, "kdr", 0.0);
         }
 
         @Override
         public int getKillstreak(Player player) {
-            File playerFile = new File(dataFolder, player.getUniqueId() + ".json");
-            if (playerFile.exists()) {
-                JsonObject playerData = loadPlayerData(playerFile);
-                return playerData.get("killstreak").getAsInt();
-            }
-            return 0;
+            return getPlayerData(player, "killstreak", 0);
         }
 
         @Override
         public int getTopKillstreak(Player player) {
-            File playerFile = new File(dataFolder, player.getUniqueId() + ".json");
-            if (playerFile.exists()) {
-                JsonObject playerData = loadPlayerData(playerFile);
-                return playerData.get("topkillstreak").getAsInt();
-            }
-            return 0;
+            return getPlayerData(player, "topkillstreak", 0);
         }
 
         @Override
         public void resetPlayerStats(Player player) {
-            File playerFile = new File(dataFolder, player.getUniqueId() + ".json");
-            if (playerFile.exists()) {
-                JsonObject playerData = loadPlayerData(playerFile);
+            updatePlayerData(player, playerData -> {
                 playerData.addProperty("kills", 0);
                 playerData.addProperty("deaths", 0);
                 playerData.addProperty("killstreak", 0);
                 playerData.addProperty("topkillstreak", 0);
                 playerData.addProperty("kdr", 0.0);
+            });
+        }
 
+        private void updatePlayerData(Player player, java.util.function.Consumer<JsonObject> updater) {
+            File playerFile = new File(dataFolder, player.getUniqueId() + ".json");
+            if (playerFile.exists()) {
+                JsonObject playerData = loadPlayerData(playerFile);
+                updater.accept(playerData);
                 savePlayerData(playerFile, playerData);
             }
+        }
+
+        private <T> T getPlayerData(Player player, String key, T defaultValue) {
+            File playerFile = new File(dataFolder, player.getUniqueId() + ".json");
+            if (playerFile.exists()) {
+                JsonObject playerData = loadPlayerData(playerFile);
+                if (playerData.has(key)) {
+                    if (defaultValue instanceof Integer) {
+                        return (T) Integer.valueOf(playerData.get(key).getAsInt());
+                    } else if (defaultValue instanceof Double) {
+                        return (T) Double.valueOf(playerData.get(key).getAsDouble());
+                    }
+                }
+            }
+            return defaultValue;
         }
 
         private JsonObject loadPlayerData(File playerFile) {
             try (Reader reader = new InputStreamReader(new FileInputStream(playerFile), StandardCharsets.UTF_8)) {
                 return JsonParser.parseReader(reader).getAsJsonObject();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, "Error loading player data from " + playerFile.getName(), e);
                 return new JsonObject();
             }
         }
@@ -206,7 +211,7 @@ public final class AsakaStats extends JavaPlugin {
                  JsonWriter jsonWriter = new JsonWriter(writer)) {
                 gson.toJson(playerData, jsonWriter);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, "Error saving player data to " + playerFile.getName(), e);
             }
         }
 
@@ -268,18 +273,18 @@ public final class AsakaStats extends JavaPlugin {
         }
 
         @Override
-        public String getIdentifier() {
+        public @NotNull String getIdentifier() {
             return "asakastats";
         }
 
         @Override
-        public String getAuthor() {
+        public @NotNull String getAuthor() {
             return "NotEnder";
         }
 
         @Override
-        public String getVersion() {
-            return "1.0";
+        public @NotNull String getVersion() {
+            return "1.2";
         }
 
         @Override
@@ -307,11 +312,9 @@ public final class AsakaStats extends JavaPlugin {
 
     static class StatsCommand implements CommandExecutor {
         private final DataStorage dataStorage;
-        private final AsakaStats plugin;
 
-        public StatsCommand(DataStorage dataStorage, AsakaStats plugin) {
+        public StatsCommand(DataStorage dataStorage) {
             this.dataStorage = dataStorage;
-            this.plugin = plugin;
         }
 
         @Override
@@ -341,11 +344,10 @@ public final class AsakaStats extends JavaPlugin {
                 player.sendMessage("§eAuthor: §fNotEnder §7(NotEnderVN)");
                 player.sendMessage("§f");
             } else {
-                ConsoleCommandSender console = Bukkit.getConsoleSender();
-                console.sendMessage("§f");
-                console.sendMessage("§bAsakaStats §ev" + getDescription().getVersion());
-                console.sendMessage("§eAuthor: §fNotEnder §7(NotEnderVN)");
-                console.sendMessage("§f");
+                sender.sendMessage("");
+                sender.sendMessage("AsakaStats §ev" + getDescription().getVersion());
+                sender.sendMessage("Author: §fNotEnder §7(NotEnderVN)");
+                sender.sendMessage("");
             }
             return true;
         }
@@ -354,11 +356,9 @@ public final class AsakaStats extends JavaPlugin {
 
     static class ResetStatsCommand implements CommandExecutor {
         private final DataStorage dataStorage;
-        private final AsakaStats plugin;
 
-        public ResetStatsCommand(DataStorage dataStorage, AsakaStats plugin) {
+        public ResetStatsCommand(DataStorage dataStorage) {
             this.dataStorage = dataStorage;
-            this.plugin = plugin;
         }
 
         @Override
