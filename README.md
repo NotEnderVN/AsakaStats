@@ -3,6 +3,8 @@
 
 Phiên bản máy chủ Minecraft đã thử: 1.21.1/4
 
+**YÊU CẦU [Placeholder API](https://www.spigotmc.org/resources/placeholderapi.6245/)**
+
 ![image](https://github.com/user-attachments/assets/4b99af92-23f5-44c7-ada7-0f9cf5bdf659)
 
 ## Lệnh và quyền
@@ -11,7 +13,6 @@ Phiên bản máy chủ Minecraft đã thử: 1.21.1/4
 - **/resetstats <tên người chơi>** -> Reset stats của một player (**asakastats.admin**)
 
 ## Placeholder API
-- Yêu cầu: Cài plugin [Placeholder API](https://www.spigotmc.org/resources/placeholderapi.6245/)
 - **%asakastats_**_kills_/_deaths_/_kdr_/_killstreak_/_topkillstreak_**%**
   + Mẫu:
 
