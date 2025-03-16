@@ -3,7 +3,7 @@
 
 Phiên bản máy chủ Minecraft đã thử: 1.21.1/4
 
-**YÊU CẦU [Placeholder API](https://www.spigotmc.org/resources/placeholderapi.6245/)**
+## **YÊU CẦU [Placeholder API](https://www.spigotmc.org/resources/placeholderapi.6245/) để hoạt động**
 
 ![image](https://github.com/user-attachments/assets/4b99af92-23f5-44c7-ada7-0f9cf5bdf659)
 
