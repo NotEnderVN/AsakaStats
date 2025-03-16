@@ -284,7 +284,7 @@ public final class AsakaStats extends JavaPlugin implements CommandExecutor {
 
         @Override
         public @NotNull String getVersion() {
-            return "1.2";
+            return "1.2.1";
         }
 
         @Override
