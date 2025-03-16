@@ -1,4 +1,4 @@
-# AsakaStats
+# AsakaStats [![CodeFactor](https://www.codefactor.io/repository/github/notendervn/asakastats/badge)](https://www.codefactor.io/repository/github/notendervn/asakastats)
 Đây là plugin đầu tiên của mình tự làm (chắc vậy) nên nhìn ncc, cảm ơn vì da den
 
 Phiên bản máy chủ Minecraft đã thử: 1.21.1/4
