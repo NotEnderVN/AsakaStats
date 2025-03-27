@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,20 +30,19 @@ import org.jetbrains.annotations.NotNull;
 public final class AsakaStats extends JavaPlugin implements CommandExecutor {
 
     private DataStorage dataStorage;
-    private Logger logger;
 
     @Override
     public void onEnable() {
-        this.logger = getLogger();
+        Logger logger = getLogger();
         this.dataStorage = new JsonFileStorage(this, logger);
         new AsakaStatsExpansion(dataStorage).register();
 
         Bukkit.getPluginManager().registerEvents(new PlayerKillListener(dataStorage), this);
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(dataStorage), this);
 
-        this.getCommand("stats").setExecutor(new StatsCommand(dataStorage));
-        this.getCommand("resetstats").setExecutor(new ResetStatsCommand(dataStorage));
-        this.getCommand("asakastats").setExecutor(this);
+        Objects.requireNonNull(this.getCommand("stats")).setExecutor(new StatsCommand(dataStorage));
+        Objects.requireNonNull(this.getCommand("resetstats")).setExecutor(new ResetStatsCommand(dataStorage));
+        Objects.requireNonNull(this.getCommand("asakastats")).setExecutor(this);
 
         ConsoleCommandSender console = Bukkit.getConsoleSender();
         console.sendMessage("§f");
@@ -56,10 +56,6 @@ public final class AsakaStats extends JavaPlugin implements CommandExecutor {
         ConsoleCommandSender console = Bukkit.getConsoleSender();
         console.sendMessage("§eThank you for using AsakaStats");
         this.dataStorage.close();
-    }
-
-    private void logInfo(String message) {
-        logger.info("§f" + message);
     }
 
     interface DataStorage {
@@ -284,29 +280,23 @@ public final class AsakaStats extends JavaPlugin implements CommandExecutor {
 
         @Override
         public @NotNull String getVersion() {
-            return "1.2.1";
+            return "1.3.0";
         }
 
         @Override
-        public String onPlaceholderRequest(Player player, String identifier) {
+        public String onPlaceholderRequest(Player player, @NotNull String identifier) {
             if (player == null) {
                 return "";
             }
 
-            switch (identifier.toLowerCase()) {
-                case "kills":
-                    return String.valueOf(dataStorage.getKills(player));
-                case "deaths":
-                    return String.valueOf(dataStorage.getDeaths(player));
-                case "kdr":
-                    return String.format("%.2f", dataStorage.getKDR(player));
-                case "killstreak":
-                    return String.valueOf(dataStorage.getKillstreak(player));
-                case "topkillstreak":
-                    return String.valueOf(dataStorage.getTopKillstreak(player));
-                default:
-                    return null;
-            }
+            return switch (identifier.toLowerCase()) {
+                case "kills" -> String.valueOf(dataStorage.getKills(player));
+                case "deaths" -> String.valueOf(dataStorage.getDeaths(player));
+                case "kdr" -> String.format("%.2f", dataStorage.getKDR(player));
+                case "killstreak" -> String.valueOf(dataStorage.getKillstreak(player));
+                case "topkillstreak" -> String.valueOf(dataStorage.getTopKillstreak(player));
+                default -> null;
+            };
         }
     }
 
@@ -318,27 +308,47 @@ public final class AsakaStats extends JavaPlugin implements CommandExecutor {
         }
 
         @Override
-        public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-            if (!(sender instanceof Player player)) {
-                sender.sendMessage("§cThis command can only be executed by players.");
-                return true;
-            }
+        public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+            Player targetPlayer;
 
-            player.sendMessage("§3§lStats:");
-            player.sendMessage("§bKills: §f" + dataStorage.getKills(player));
-            player.sendMessage("§bDeaths: §f" + dataStorage.getDeaths(player));
-            player.sendMessage("§bKDR: §f" + String.format("%.2f", dataStorage.getKDR(player)));
-            player.sendMessage("§bKillstreak: §f" + dataStorage.getKillstreak(player));
-            player.sendMessage("§bTop Killstreak: §f" + dataStorage.getTopKillstreak(player));
+            if (args.length == 0) {
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage("§cThis command can only be executed by players without arguments.");
+                    return true;
+                }
+                targetPlayer = player;
+            } else {
+                targetPlayer = Bukkit.getPlayer(args[0]);
+                if (targetPlayer == null) {
+                    sender.sendMessage("§cPlayer not found.");
+                    return true;
+                }
+            }
+            // Executed from player
+            if (sender instanceof Player player) {
+                player.sendMessage("§3§lStats §8[ " + targetPlayer.getName() + " ]");
+                player.sendMessage("§bKills: §f" + dataStorage.getKills(targetPlayer));
+                player.sendMessage("§bDeaths: §f" + dataStorage.getDeaths(targetPlayer));
+                player.sendMessage("§bKDR: §f" + String.format("%.2f", dataStorage.getKDR(targetPlayer)));
+                player.sendMessage("§bKillstreak: §f" + dataStorage.getKillstreak(targetPlayer));
+                player.sendMessage("§bTop Killstreak: §f" + dataStorage.getTopKillstreak(targetPlayer));
+            // Executed from console/non-player
+            } else {
+                sender.sendMessage("§3§lStats §8[ " + targetPlayer.getName() + " ]");
+                sender.sendMessage("Kills: " + dataStorage.getKills(targetPlayer));
+                sender.sendMessage("Deaths: " + dataStorage.getDeaths(targetPlayer));
+                sender.sendMessage("KDR: " + String.format("%.2f", dataStorage.getKDR(targetPlayer)));
+                sender.sendMessage("Killstreak: " + dataStorage.getKillstreak(targetPlayer));
+                sender.sendMessage("Top Killstreak: " + dataStorage.getTopKillstreak(targetPlayer));
+            }
             return true;
         }
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, String[] args) {
         if (command.getName().equalsIgnoreCase("asakastats")) {
-            if (sender instanceof Player) {
-                Player player = (Player) sender;
+            if (sender instanceof Player player) {
                 player.sendMessage("§f");
                 player.sendMessage("§bAsakaStats §ev" + getDescription().getVersion());
                 player.sendMessage("§eAuthor: §fNotEnder §7(NotEnderVN)");
@@ -362,7 +372,7 @@ public final class AsakaStats extends JavaPlugin implements CommandExecutor {
         }
 
         @Override
-        public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
             if (!sender.hasPermission("asakastats.admin")) {
                 sender.sendMessage("§cYou don't have permission to execute this command.");
                 return true;
