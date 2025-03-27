@@ -327,19 +327,19 @@ public final class AsakaStats extends JavaPlugin implements CommandExecutor {
             // Executed from player
             if (sender instanceof Player player) {
                 player.sendMessage("§3§lStats §8[ " + targetPlayer.getName() + " ]");
-                player.sendMessage("§bKills: §f" + dataStorage.getKills(targetPlayer));
-                player.sendMessage("§bDeaths: §f" + dataStorage.getDeaths(targetPlayer));
-                player.sendMessage("§bKDR: §f" + String.format("%.2f", dataStorage.getKDR(targetPlayer)));
-                player.sendMessage("§bKillstreak: §f" + dataStorage.getKillstreak(targetPlayer));
-                player.sendMessage("§bTop Killstreak: §f" + dataStorage.getTopKillstreak(targetPlayer));
+                player.sendMessage("§b Kills: §f" + dataStorage.getKills(targetPlayer));
+                player.sendMessage("§b Deaths: §f" + dataStorage.getDeaths(targetPlayer));
+                player.sendMessage("§b KDR: §f" + String.format("%.2f", dataStorage.getKDR(targetPlayer)));
+                player.sendMessage("§b Killstreak: §f" + dataStorage.getKillstreak(targetPlayer));
+                player.sendMessage("§b Top Killstreak: §f" + dataStorage.getTopKillstreak(targetPlayer));
             // Executed from console/non-player
             } else {
-                sender.sendMessage("§3§lStats §8[ " + targetPlayer.getName() + " ]");
-                sender.sendMessage("Kills: " + dataStorage.getKills(targetPlayer));
-                sender.sendMessage("Deaths: " + dataStorage.getDeaths(targetPlayer));
-                sender.sendMessage("KDR: " + String.format("%.2f", dataStorage.getKDR(targetPlayer)));
-                sender.sendMessage("Killstreak: " + dataStorage.getKillstreak(targetPlayer));
-                sender.sendMessage("Top Killstreak: " + dataStorage.getTopKillstreak(targetPlayer));
+                player.sendMessage("§3§lStats §8[ " + targetPlayer.getName() + " ]");
+                player.sendMessage("§b Kills: §f" + dataStorage.getKills(targetPlayer));
+                player.sendMessage("§b Deaths: §f" + dataStorage.getDeaths(targetPlayer));
+                player.sendMessage("§b KDR: §f" + String.format("%.2f", dataStorage.getKDR(targetPlayer)));
+                player.sendMessage("§b Killstreak: §f" + dataStorage.getKillstreak(targetPlayer));
+                player.sendMessage("§b Top Killstreak: §f" + dataStorage.getTopKillstreak(targetPlayer));
             }
             return true;
         }
